@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyuan.mybatis.dao.EmployeeMapperPlus">
+	
+	<!-- 
+		自定义封装返回查询结构
+			resultMap标签:
+				type:返回结果的类型需要指定全路径名(测试用Employee)
+				id:唯一标识
+	 -->
+	 <resultMap type="com.youyuan.mybatis.domain.Employee" id="myemp">
+	 	<!-- 
+	 		以下标签用于数据库字段和javabean属性的对应关系
+	 		id:指定主键
+	 		result:指定普通属性
+	 	 -->
+	 	<id column="GUID" property="guid"/>
+	 	<result column="USER_NAME" property="userName"/>
+	 	<result column="GENDER" property="gender"/>
+	 	<result column="EMAIL" property="email"/>
+	 </resultMap>
+	
+	 <select id="getEmpById" resultMap="myemp">
+	 	select * from EMPLOYEE where GUID=#{guid}
+	 </select>
+	 
+	 <!-- 
+	 	多表关联查询返回自定义封装resultMap
+	  -->
+	  <resultMap type="com.youyuan.mybatis.domain.Employee" id="myempdep">
+	  	<!-- 
+	  		resultMap自定义封装,将数据库字段与javabean属性对应
+	  		id:封装主键
+	  		result:封装普通列
+	  	 -->
+	  	<id column="eid" property="guid"/>
+	  	<result column="eusername" property="userName"/>
+	  	<result column="egender" property="gender"/>
+	  	<result column="email" property="email"/>
+	  	<result column="did" property="dep.guid"/>
+	  	<result column="dname" property="dep.departmentName"/>
+	  </resultMap>
+	  
+	  <resultMap type="com.youyuan.mybatis.domain.Employee" id="myempdep1">
+	  	<!-- 
+	  		resultMap自定义封装,将数据库字段与javabean属性对应
+	  		id:封装主键
+	  		result:封装普通列
+	  	 -->
+	  	<id column="eid" property="guid"/>
+	  	<result column="eusername" property="userName"/>
+	  	<result column="egender" property="gender"/>
+	  	<result column="email" property="email"/>
+	  	<!-- 
+	  		使用association指定联合查询的javabean对象
+	  			property:在上层javabean中的属性名
+	  			javaType:联合查询的javabean全路径
+	  	 -->
+	  	<association property="dep" javaType="com.youyuan.mybatis.domain.Department">
+	  		<id column="did" property="guid"/>
+	  		<result column="dname" property="departmentName"/>
+	  	</association>
+	  </resultMap>
+	  
+	  <select id="getEmpAndDepById" resultMap="myempdep1">
+	  	select e.GUID eid,e.USER_NAME eusername,e.GENDER egender,e.EMAIL email,e.DEPARTMENT_ID did,d.DEPARTMENT_NAME dname from EMPLOYEE e,DEPARTMENT d where e.DEPARTMENT_ID=d.GUID and e.GUID=#{guid}
+	  </select>
+	  
+	  
+	  <!-- 
+	  	resultMap:自定义封装结果标签
+	  		association:进行分步查询
+	  			id:用于主键封装  column查询出的字段名  property赋值的属性
+	  			result:普通字段封装  column查询出的字段名  property赋值的属性
+	   -->
+	   <resultMap type="com.youyuan.mybatis.domain.Employee" id="myEmpDepByStep">
+	   	 <id column="guid" property="guid"/>
+	   	 <result column="USER_NAME" property="userName"/>
+	   	 <result column="EMAIL" property="email"/>
+	   	 <result column="GENDER" property="gender"/>
+	   	 <!-- 
+	   	 	association：
+	   	 		select:指定要查询的接口全路径和方法名
+	   	 		property:在上个对象中的属性
+	   	 		column:上个对象查询出的字段作为参数
+	   	 		
+	   	 	流程:通过select(要查询对象的接口全路径和方法名),查询的结果赋值给property标签指定的属性,传递参数是上个对象查出的column值
+	   	  -->
+	   	 <association property="dep" select="com.youyuan.mybatis.dao.DepartmentMapper.getDepartMentById" column="DEPARTMENT_ID">
+	   	 </association>
+	   </resultMap>
+	  <select id="getEmpAndDepStepById" resultMap="myEmpDepByStep">
+	  	select * from EMPLOYEE where GUID=#{guid}
+	  </select>
+	  
+	  <!-- 
+	  	懒加载:目前是查询Eployee的时候就会把Department查出来,实现在用Department的时候在去查询
+	  		需要在全局配置文件中的setting标签中配置上懒加载的开关两个属性
+	   -->
+	   
+	  <select id="getEmpListByDepId" resultType="com.youyuan.mybatis.domain.Employee">
+	  	select * from EMPLOYEE where DEPARTMENT_ID=#{deptId}
+	  </select>
+	  
+	  <resultMap type="com.youyuan.mybatis.domain.Employee" id="myEmpDis">
+	  	<id column="guid" property="guid"/>
+	  	<result column="USER_NAME" property="userName"/>
+	  	<result column="email" property="email"/>
+	  	<result column="gender" property="gender"/>
+	  	
+	  	<!-- 
+	  		discriminator:鉴别器,获取某列值改变返回封装结果
+	  			column:获取值的列名
+	  			javaType:column列名的类型
+	  	 -->
+	  	<discriminator javaType="string" column="gender">
+	  		<!-- 
+	  			case:用于判断(类似if语句)
+	  				value:列的值,判断条件    此处代表gender的值
+	  				
+	  				例如:gender=0查询出部门信息   否则不查部门信息
+	  		 -->
+	  		<case value="0" resultType="com.youyuan.mybatis.domain.Employee">
+	  			<association property="dep" select="com.youyuan.mybatis.dao.DepartmentMapper.getDepartMentById" column="DEPARTMENT_ID">
+	  			
+	  			</association>
+	  		</case>
+	  	</discriminator>
+	  </resultMap>
+	  <select id="getEmpByDisId" resultMap="myEmpDis">
+	  	select * from EMPLOYEE where GUID=#{guid}
+	  </select>
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyuan.mybatis.dao.EmployeeMapper">
+
+<!-- 
+	namespace:命名空间   (接口式编程时命名空间指定接口的全路径名)
+	id:唯一标识    (接口式编程时指定方法名称)
+	resultType:返回类型
+	#{id}:传递的参数  值
+ -->
+<select id="getEmployeeById" resultType="com.youyuan.mybatis.domain.Employee">
+	<!-- select GUID as guid,USER_NAME as userName,GENDER as gender,email from EMPLOYEE where GUID = #{id}  -->
+	select * from EMPLOYEE where GUID = #{id}
+</select>
+
+<select id="getUserNameByGuid" resultType="String">
+	select USER_NAME from EMPLOYEE where GUID = #{guid}
+</select>
+
+<!-- public boolean addEmp(Employee emp) values里面是javabean的属性名
+	useGeneratedKeys="true"   打开获取自增主键开关
+	keyProperty="guid"  将自增主键值赋值给哪个属性(属性名  不是数据库字段值)
+-->
+<insert id="addEmp" parameterType="com.youyuan.mybatis.domain.Employee" useGeneratedKeys="true" keyProperty="guid">
+
+	<!-- 非自增主键保存获取主键
+		keyProperty:主键名(javabean属性名)
+		resultType:主键类型(javabean中的属性类型)
+		order:两个值  (BEFORE:执行insert前执行selectKey标签中的语句,AFTER:执行insert后执行selectKey标签中的语句)
+	 -->
+	<!-- <selectKey keyProperty="guid" resultType="Long" order="BEFORE">
+		sql语句
+	</selectKey>
+	 -->
+	insert into EMPLOYEE (USER_NAME,GENDER,EMAIL) values (#{userName},#{gender},#{email})
+</insert>
+
+<!-- public Integer update(Employee emp) set中是javabean的属性名-->
+<update id="update" parameterType="com.youyuan.mybatis.domain.Employee">
+	update EMPLOYEE set USER_NAME=#{userName},GENDER=#{gender},EMAIL=#{email} where GUID=#{guid}
+</update>
+
+<!-- public Integer deleteByGuid(Long guid) -->
+<delete id="deleteByGuid" parameterType="com.youyuan.mybatis.domain.Employee">
+	delete from EMPLOYEE where GUID=#{guid}
+</delete>
+
+<select id="getEmployeeByGuidAndUserName" resultType="com.youyuan.mybatis.domain.Employee">
+	<!--  select * from EMPLOYEE where GUID=#{param1} and USER_NAME=#{param2}-->
+	
+	select * from EMPLOYEE where GUID=#{guid} and USER_NAME=#{userName}<!-- 命名参数 -->
+	
+</select>
+
+<select id="getEmployeeByMap" resultType="com.youyuan.mybatis.domain.Employee">
+	select * from EMPLOYEE where GUID=${guid} and USER_NAME=#{userName}
+</select>
+
+<!-- 
+	查询，返回list集合
+	public List<Employee> getEmployeeList(String userName)
+	resultType:是集合元素, 不是list
+ -->
+ <select id="getEmployeeList" resultType="com.youyuan.mybatis.domain.Employee">
+ 	select * from EMPLOYEE where USER_NAME=#{userName}
+ </select>
+ 
+ <!--
+ 	返回map  key是javabean属性名  value是值    resultType需要设定为map
+  	public Map<String, Object> getEmpByIdToMap(Long guid)
+  -->
+  
+  <select id="getEmpByIdToMap" resultType="map">
+  	select * from EMPLOYEE where GUID=#{guid}
+  </select>
+  
+  <!-- 
+  		查询多条记录返回map结构   key主键  value是实体bean    resultType是map  需要在接口通过注解指定key是实体bean的那个属性 @MapKey
+  		public Map<Long, Employee> getEmpByUserNameToMap(String userName)
+   -->
+   <select id="getEmpByUserNameToMap" resultType="com.youyuan.mybatis.domain.Employee">
+   	select * from EMPLOYEE where USER_NAME LIKE #{userName}
+   </select>
+
+</mapper>

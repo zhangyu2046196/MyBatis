@@ -1,0 +1,50 @@
+1、单参数      mybatis不做特殊处理
+	#{参数名}  参数名可以随便起
+	
+2、多参数     mybatis会把所有参数封装成map
+	key:param1......param10   key是固定值从1开始往下排
+	value:是传过来的值
+	
+3、命名参数   mybatis会把所有参数封装成map
+	在接口那使用@param("guid")指定参数名括号中guid为参数名,然后在sql映射文件中使用括号中的名称,例如：
+	
+	@Param("guid")Long guid,@Param("userName")String userName
+	
+	select * from EMPLOYEE where GUID=#{guid} and USER_NAME=#{userName}
+	
+4、pojo(简单的java对象,就是javabean),如果参数正好是pojo对应的属性,可以传pojo   (为了区分ejb所以将javabean叫做 pojo)
+	#(pojo的属性值)   也就是javabean的属性值
+	
+5、map  如果参数不是业务模型pojo,可以传入一个map,map的key就是参数名,例如:
+	Map<String,Object> map=new HashMap<String,Object>();
+	#(key)  参数名就是map的key
+	
+6、TO(Transction Object)   如果参数不是数据模型pojo,可以把参数转为一个对象,例如:
+	
+	class Page{
+		Long guid;
+		String userName;
+	}
+	
+	#{TO的属性值}
+	
+=====================================================思考===========================================================
+以下假设参数为guid   userName
+public Employee getEmp(@param("guid")Long guid,String userName);
+	取值:#{guid/param1},#{param2}
+	
+public Employee getEmp(Long guid,@param("e")Employee emp)  特殊情况参数为对象
+	取值:#{param1}  #{e.userName/param2.userName}
+	
+public Employee getEmp(List<Object> ls)  特殊情况参数为list
+	取值:#{list[0]} #{list[1]}  此时名字必须 是  list
+	
+	
+	
+	
+=====================================================参数取值=========================================================
+	select * from EMPLOYEE where GUID=${guid} and USER_NAME=#{userName}
+	select * from EMPLOYEE where GUID=1 and USER_NAME=?
+	#{}取值和${}取值的区别
+		#{}取值是将参数占位符，通过jdbc的PreparedStatement进行sql预编译防止sql注入
+		${}取值是将参数值拼接到sql语句中,有sql注入风险	

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<!-- mybatis的代码生成器的配置文件 -->
+<generatorConfiguration>
+
+  <!-- 
+  		targetRuntime
+  			MyBatis3Simple:生成简单的增删改查接口
+  			MyBatis3:生成带条件的复杂增删改查接口
+   -->
+  <context id="mysqlTables" targetRuntime="MyBatis3">
+  
+  	<!-- 代码生成器指定目标数据源信息 -->
+    <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+        connectionURL="jdbc:mysql://localhost:3306/mybatis"
+        userId="root"
+        password="easclub.com">
+    </jdbcConnection>
+
+    <javaTypeResolver >
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+
+	<!-- 代码生成器指定javabean生成策略 -->
+    <javaModelGenerator targetPackage="com.youyuan.mybatis.domain" targetProject=".\src">
+      <property name="enableSubPackages" value="true" />
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator>
+
+	<!-- 代码生成器指定sql映射文件生成策略 -->
+    <sqlMapGenerator targetPackage="com.youyuan.mybatis.dao"  targetProject=".\config">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+
+	<!-- 代码生成器指定mapper生成策略 -->
+    <javaClientGenerator type="XMLMAPPER" targetPackage="com.youyuan.mybatis.dao"  targetProject=".\src">
+      <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+
+    <!-- 
+    	代码生成器指定哪些表通过逆向工程(mbg)生成mybatis的javabean、sql映射文件、mapper
+    	tableName:表名
+    	domainObjectName:生成javabean的名称
+     -->
+	<table tableName="EMPLOYEE" domainObjectName="Employee"></table>
+	<table tableName="DEPARTMENT" domainObjectName="Department"></table>
+
+  </context>
+</generatorConfiguration>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 
+		properties标签用来引入外部properties配置文件内容
+		属性:
+			resource：引入类路径配置文件
+			url：引入网路地址配置文件
+	 -->
+	<properties resource="dbconfig.properties"></properties>
+	<!-- 
+		settings配置mybatis运行时参数
+	 -->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/><!-- 开启驼峰命名规则 -->
+		
+		<setting name="lazyLoadingEnabled" value="true"/><!-- 开启懒加载 -->
+		
+		<setting name="aggressiveLazyLoading" value="false"/><!-- 切入式加载  true:全部加载  false:使用时加载 -->	
+		
+		<setting name="logImpl" value="LOG4J"/><!-- 开启log4j打印执行sql语句 -->	
+	</settings>
+	
+	<!-- 
+		typeAliases别名处理器，用来给javabean起别名
+		passage批量起别名时，别名时类名小写
+	 -->
+	<typeAliases>
+		<!-- 
+			1、给类起别名，type类的全路径  alias别名名称
+		 
+		<typeAlias type="com.youyuan.mybatis.domain.Employee" alias="emp"/>
+		-->
+		
+		<!-- 
+			2、passage批量起别名  默认别名为类型小写
+		 -->
+		<package name="com.youyuan.mybatis.domain"/>
+		
+		<!-- 
+			3、通过注解起别名   @Alia 为了解决多个相同类名
+		 -->
+	</typeAliases>
+	
+	<!-- 
+		environments配置mybatis数据源的运行环境信息 ,default指定使用哪个配置信息,是environment中id属性值(适用于开发和生产环境的配置信息)
+		
+ 	 		 environment标签 的id属性是唯一标识   包含两个子标签
+ 	 		 	
+ 	 		 	transactionManager 事物管理器   type(JDBC|MANAGED)
+ 	 		 	datasource数据源   type(UNPOOLED不使用连接池|POOLED使用连接池|JNDI   jndi)
+ 	 		 	
+	 -->
+	<environments default="development">
+	
+		<environment id="test">
+			<transactionManager type="JDBC"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}"/>
+				<property name="url" value="${jdbc.url}"/>
+				<property name="username" value="${jdbc.username}"/>
+				<property name="password" value="${jdbc.password}"/>
+			</dataSource>
+		</environment>
+	
+		<environment id="development">
+			<transactionManager type="JDBC"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}"/>
+				<property name="url" value="${jdbc.url}"/>
+				<property name="username" value="${jdbc.username}"/>
+				<property name="password" value="${jdbc.password}"/>
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- databaseIdProvider配置多数据源   type固定值DB_VENDOR -->
+	<databaseIdProvider type="DB_VENDOR">
+		<property name="MYSQL" value="mysql"/><!-- 给不同的数据库起别名 -->
+		<property name="ORACLE" value="oracle"/>
+		<property name="SQL SERVICE" value="sqlserver"/>
+	</databaseIdProvider>
+	
+	<!-- 把写好的sql映射文件注册到全局配置文件mybatis-config.xml中 -->
+	<mappers>
+		<!-- 
+			resource将类路径下的sql映射文件注册到全局配置文件中
+			url指定报名的sql映射文件注册到全局配置文件中 ，如com/youyuan/mybatis/employeeMapper.xml
+			
+			class
+		 -->
+		<!--  <mapper resource="employeeMapper.xml"/>
+		<mapper url="com/youyuan/mybatis/employeeMapper.xml"/>
+		<mapper class="com/youyuan/mybatis/EmployeeMapperAnnotion"/>--><!-- 需要指定接口全路径,通过注解在接口的方法上写sql -->
+		
+		<!-- 批量注册, sql映射文件必须和接口在同一目录下，或在配置文件创建接口相同包名的配置文件下 -->
+		<package name="com.youyuan.mybatis"/>
+	</mappers>
+</configuration>

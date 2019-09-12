@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyuan.mybatis.dao.EmployeeDynamicSqlMapper">
+	
+	<!-- 
+		动态sql查询标签
+		if 条件查询标签
+		choose 分支查询标签 (when, otherwise) when满足条件执行类似java中的if  otherwise不满足条件执行类似java中的else
+		trim 截取字符串标签 (where, set)  set更新标签
+		foreach 遍历标签
+	 -->
+	<select id="getEmpByDynamicSql" resultType="com.youyuan.mybatis.domain.Employee">
+		select * from EMPLOYEE
+		<!-- 
+			动态sql中if标签的使用
+			test:ognl表达式(写法类似于sql语句 表达式中的参数是传递的参数名就是#{}大口号里面的名字)
+			where:where标签只能自定去掉前面的and/or(and/or GUID=#{guid} and/or USER_NAME=#{userName}),不能去掉后面的and/or(GUID=#{guid} and/or USER_NAME=#{userName} and/or)
+		 -->
+		<where>
+			<if test="guid>0">
+				and GUID=#{guid}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and USER_NAME like #{userName}
+			</if>
+			<if test="email!=null and email!=''">
+				and EMAIL=#{email}
+			</if>
+			<if test="gender==0 or gender==1">
+				and GENDER=#{gender}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getEmpByDynamicSqlTrim" resultType="com.youyuan.mybatis.domain.Employee">
+		select * from Employee
+		<!-- 
+			trim:截取字符串标签
+				prefix="":前缀,在拼好的字符串前面加上指定字符
+				prefixOverrides="":将拼好的字符串去掉前面指定的字符
+			    suffix="":后缀,在拼好的字符串后面添加指定字符
+			    suffixOverrides="":拼接好的字符串去掉后面指定的字符
+		 -->
+		<trim prefix="where" suffixOverrides="and">
+			<if test="guid>0">
+				GUID=#{guid} and
+			</if>
+			<if test="userName!=null and userName!=''">
+				USER_NAME LIKE #{userName} and
+			</if>
+			<if test="email!=null and email!=''">
+				EMAIL=#{email} and
+			</if>
+			<if test="gender==0 or gender==1">
+				GENDER=#{gender} and
+			</if>
+		</trim>
+	</select>
+	
+	<select id="getEmpByDynamicSqlChoose" resultType="com.youyuan.mybatis.domain.Employee">
+		select * from EMPLOYEE
+		<!-- 添加where标签 -->
+		<where>
+			<!-- 
+				choose:分支查询标签
+					when:满足条件执行类似java中if
+					otherwise:不满足条件执行类似java中else
+			 -->
+			<choose>
+				<when test="guid>0">
+					GUID=#{guid}
+				</when>
+				<when test="userName!=null and userName!=''">
+					USER_NAME LIKE #{userName}
+				</when>
+				<when test="guid>0 and userName!=null and userName!=''">
+					GUID=#{guid} and USER_NAME like #{userName}
+				</when>
+				<otherwise>
+					GENDER=0
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<update id="updateEmpByDynamicSqlSetOrTrim">
+		update EMPLOYEE
+		
+		<!-- 使用trim标签更新 -->
+		<!-- <trim prefix="set" suffixOverrides=",">
+			<if test="userName!=null and userName!=''">
+				USER_NAME=#{userName},
+			</if>
+			<if test="email!=null and email!=''">
+				EMAIL=#{email},
+			</if>
+			<if test="gender==0 or gender==1">
+				GENDER=#{gender},
+			</if>
+		</trim>
+		<where>
+			GUID=#{guid}
+		</where> -->
+		
+		<!-- 使用set标签更新,set标签可以自动去掉后面的,逗号 -->
+		<set>
+			<if test="userName!=null and userName!=''">
+				USER_NAME=#{userName},
+			</if>
+			<if test="email!=null and email!=''">
+				EMAIL=#{email},
+			</if>
+			<if test="gender==0 or gender==1">
+				GENDER=#{gender},
+			</if>
+		</set>
+		<where>
+			GUID=#{guid}
+		</where>
+	</update>
+	
+	<select id="getEmpByDynamicSqlForeach" resultType="com.youyuan.mybatis.domain.Employee">
+		<!-- 
+			foreach:标签遍历
+			select * from EMPLOYEE where id in (1,2,3)
+		 -->
+		 select * from EMPLOYEE
+		 <where>
+		 	GUID in
+		 	<!-- 
+		 		collection:指定传入参数的参数名(需要用@param命名参数 规则指定名称),传入的list参数会转成map其中key的名字就是list
+		 		item:将遍历出来的元素赋值给item标签变量,通过#(item标签变量名取出值)
+		 		separator:sql语句连接的分隔符,例如:in(1,2,3)中的分隔符是,   values(),(),()中分隔符也是,
+		 		open:开始符号
+		 		close:结束符号
+		 	 -->
+		 	<foreach collection="ids" item="item_id" separator="," open="(" close=")">
+		 		#{item_id}
+		 	</foreach>
+		 </where>
+		 
+	</select>
+	
+	<!-- 
+		foreach批量保存映射文件
+	 -->
+	<insert id="addEmps">
+		insert into EMPLOYEE (USER_NAME,EMAIL,GENDER,DEPARTMENT_ID) values
+		<foreach collection="emps" item="emp" separator=",">
+			(#{emp.userName},#{emp.email},#{emp.gender},#{emp.dep.guid})
+		</foreach>
+	</insert>
+	
+	<select id="getEmpsByInnerParam">
+		<!-- 
+			mybatis中有两个内置参数
+				_parameter:代表整个参数
+					如果传递了一个参数_parameter就代表这个参数
+					如果传递了多个参数,因为mybatis会封装成map,所以_parameter就代表这个map
+				_databaseId:代表使用的数据源别名
+		 -->
+		 <if test="_databaseId=='mysql'"><!-- 判断是不是mysql数据源 -->
+		 	<!-- 执行mysql语句 -->
+		 	<if test="_parameter!=null"><!-- 判断传递进来的参数是否为空 -->
+		 		
+		 	</if>
+		 	<if test="_parameter!=null and _paramter.userName!=null and _parameter!=''">
+		 	<!-- 
+		 		getEmpsByInnerParam接口方法因为传递的是Employee参数实体,所以_parameter代表的是Employee参数实体,所以可以使用_parameter.userName访问
+		 		Employee参数实体中的属性
+		 	 -->
+		 	
+		 	</if>
+		 </if>
+		 <if test="_databaseId=='oracle'"><!-- 判断是不是oracle数据源 -->
+		 	<!-- 执行oracle语句 -->
+		 </if>
+	</select>
+	
+	<select id="getEmpByBind" resultType="com.youyuan.mybatis.domain.Employee">
+		<!-- 
+			bind:绑定标签
+				value:代表接收传递的参数
+				name:定义一个新的变量,变量的值就是value接收的参数值
+		 -->
+		<!-- <bind name="_userName" value="'%'+_parameter.userName+'%'"/> -->
+		<bind name="_userName" value="'%'+userName+'%'"/>
+		
+		select * from EMPLOYEE
+		<if test="_parameter!=null">
+			<where>
+				USER_NAME like #{_userName}
+			</where>
+		</if>
+	</select>
+	
+	<!-- 
+		sql:标签用于抽取公共的sql部分     
+			id:为抽取的sql片段指定唯一的名称
+		
+		<include refid="">
+			<property name="" value=""/>
+		</include>
+		include:引用标签,例如引用sql抽取的公共片段
+			refid:指定引用的标签的id名称,例如引用的sql的公用代码片段id名字
+			还可以通过property标签自定义变量
+	 -->
+	<sql id="publicColumn">
+		USER_NAME,EMAIL,GENDER
+	</sql>
+	
+</mapper>

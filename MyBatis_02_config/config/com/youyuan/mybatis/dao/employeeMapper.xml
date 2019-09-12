@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyuan.mybatis.dao.EmployeeMapper">
+
+<!-- 
+	namespace:命名空间   (接口式编程时命名空间指定接口的全路径名)
+	id:唯一标识    (接口式编程时指定方法名称)
+	resultType:返回类型
+	#{id}:传递的参数  值
+ -->
+<select id="getEmployeeById" resultType="com.youyuan.mybatis.domain.Employee">
+	<!-- select GUID as guid,USER_NAME as userName,GENDER as gender,email from EMPLOYEE where GUID = #{id}  -->
+	select * from EMPLOYEE where GUID = #{id}
+</select>
+</mapper>

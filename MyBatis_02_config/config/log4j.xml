@@ -1,0 +1,80 @@
+<?xml   version="1.0"   encoding="UTF-8"   ?>   
+<!DOCTYPE   log4j:configuration   SYSTEM   "log4j.dtd">
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+	<appender name="lvevl1" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${log4jPath}/info.log" />
+		<param name="Append" value="true" />				
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%n %d{yyyy-MM-dd HH:mm:ss,SSS} %t %n  [%p]  %m %n " />
+		</layout>		
+		<param name="DatePattern" value="yyyyMMdd'.INFO.log.back'" />		
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMin" value="info" />
+			<param name="LevelMax" value="info" />
+		</filter>
+	</appender>
+	
+	<appender name="lvevl2" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${log4jPath}/warn.log" />
+		<param name="Append" value="true" />				
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%n %d{yyyy-MM-dd HH:mm:ss,SSS} %t %n  [%p]  %m %n " />
+		</layout>		
+		<param name="DatePattern" value="yyyyMMdd'.WARN.log.back'" />			
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMin" value="warn" />
+			<param name="LevelMax" value="warn" />
+		</filter>
+	</appender>	
+	
+	<appender name="lvevl3" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${log4jPath}/error-fatal.log" />
+		<param name="Append" value="true" />				
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%n %d{yyyy-MM-dd HH:mm:ss,SSS} %t %n  [%p]  %m %n " />
+		</layout>		
+		<param name="DatePattern" value="yyyyMMdd'.ERRORandFATAL.log.back'" />				
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMin" value="error" />
+			<param name="LevelMax" value="fatal" />
+		</filter>
+	</appender>
+	
+	<logger name="org.springframework" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="Console" />
+    </logger>
+	
+	<!-- 下面是打印mybatis语句的配置-->
+	<!-- 
+	<logger name="org.apache.ibatis" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="Console" />
+ 
+    </logger>
+ 
+    <logger name="java.sql.Connection" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="Console" />
+ 
+    </logger>
+    <logger name="java.sql.Statement" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="Console" />
+ 
+    </logger>
+    <logger name="java.sql.PreparedStatement" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="Console" />
+ 
+    </logger>
+	 -->
+	<root>
+		<appender-ref ref="lvevl1" />
+		<appender-ref ref="lvevl2" />
+		<appender-ref ref="lvevl3" />
+		<appender-ref ref="Console"/>
+	</root>
+	
+</log4j:configuration>

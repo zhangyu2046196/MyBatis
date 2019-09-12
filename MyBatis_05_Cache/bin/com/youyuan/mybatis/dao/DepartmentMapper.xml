@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youyuan.mybatis.dao.DepartmentMapper">
+
+	<cache-ref namespace="com.youyuan.mybatis.dao.EmployeeMapper"/><!-- 引用其它命名空间的缓存 -->
+
+	<!-- <cache></cache>	 --><!-- 使用二级缓存 -->
+	
+	<select id="getDepartMentById" resultType="com.youyuan.mybatis.domain.Department" useCache="true">
+		select * from DEPARTMENT where GUID=#{guid}
+	</select>
+	
+	<!-- 
+		Department
+			private Long guid;
+			private String departmentName;
+			private List<Employee> emps;
+	 -->
+	<resultMap type="com.youyuan.mybatis.domain.Department" id="myDep">
+		<id column="did" property="guid"/>
+		<result column="departmentName" property="departmentName"/>
+		
+		<!-- 
+			association:用于查出一个对象
+			collection:用于查出一个集合
+			ofType:指定集合存储的javabean的全路径名
+		 -->
+		<collection property="emps" ofType="com.youyuan.mybatis.domain.Employee">
+			<id column="eid" property="guid"/>
+			<result column="eusername" property="userName"/>
+			<result column="email" property="email"/>
+			<result column="gender" property="gender"/>
+			<association property="dep" javaType="com.youyuan.mybatis.domain.Department">
+				<id column="did" property="guid"/>
+				<result column="departmentName" property="departmentName"/>
+			</association>
+		</collection>
+	</resultMap>
+	<select id="getDepartMentByIdPlus" resultMap="myDep">
+		select d.guid did,d.department_name departmentName,e.guid eid,e.user_name eusername,e.email email,e.gender gender,e.department_id edid
+		from EMPLOYEE e left join DEPARTMENT d on e.department_id=d.guid where d.guid=#{guid}
+	</select>
+	
+	<!-- 
+		使用collection进行分布查询,实现懒加载
+	 -->
+	<resultMap type="com.youyuan.mybatis.domain.Department" id="myDepPlus">
+		<id column="guid" property="guid"/>
+		<result column="department_name" property="departmentName"/>
+		
+		<!-- 
+			collection使用select查询
+			association和collection标签中的column属性如果传递多个参数,可以把多个参数封装成map
+			格式如下:{key1=value1,key2=value2},key是sql语句中的参数名#{guid}(大括号中的名字),value是resultMap标签中id或result标签中column的名字
+			fetchType:加载方式   lazy延迟加载   eager立即加载
+		 -->
+		<collection property="emps" select="com.youyuan.mybatis.dao.EmployeeMapperPlus.getEmpListByDepId" column="guid" fetchType="eager"></collection>
+	</resultMap>
+	<select id="getDepartMentStepById" resultMap="myDepPlus">
+		select * from DEPARTMENT where GUID=#{guid}
+	</select>
+	
+</mapper>
